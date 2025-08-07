@@ -3,6 +3,9 @@ package com.example.myapplication111
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,13 +34,18 @@ import androidx.room.Room
 import com.example.myapplication111.data.AppDatabase
 import com.example.myapplication111.data.MessageEntity
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TextField
+
 
 
 data class Message(val sender: String, val content: String)
 
 class MainActivity : ComponentActivity() {
 
-    private val apiKey = "a"
+    private val apiKey = "api"
     private lateinit var db: AppDatabase
     private val messages = mutableStateListOf<Message>()
 
@@ -77,24 +85,43 @@ class MainActivity : ComponentActivity() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("EPN Chat") },
+                    title = {
+                        Text(
+                            text = "EPN Chat",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
                     navigationIcon = {
                         Image(
-                            painter = painterResource(R.drawable.ic_owl),
+                            painter = painterResource(R.drawable.buho),
                             contentDescription = "Owl icon",
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(32.dp),
                         )
                     },
                     actions = {
                         IconButton(onClick = { newChat() }) {
-                            Icon(Icons.Default.Add, contentDescription = "New Chat")
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "New Chat",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                         IconButton(onClick = { clearHistory() }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Clear History")
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Clear History",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
             Column(
                 modifier = Modifier
@@ -112,12 +139,33 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
                     TextField(
                         value = userMessage,
                         onValueChange = { userMessage = it },
-                        placeholder = { Text("Escribe tu mensaje") },
-                        modifier = Modifier.weight(1f)
+                        placeholder = {
+                            Text("Escribe tu mensaje" ,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSecondary
+                                )
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 56.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedPlaceholderColor = Color.Gray,
+                            unfocusedPlaceholderColor = Color.Gray
+                        )
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -155,30 +203,56 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun UserMessageBubble(text: String) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+        AnimatedVisibility(
+            visible = true,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
         ) {
-            Surface(
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(16.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(text = text, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(12.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = text,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(12.dp)
+                    )
+                }
             }
         }
     }
 
     @Composable
-    fun BotMessageBubble(text: String) {
+    fun BotMessageBubble(fullText: String) {
+        var visibleText by remember { mutableStateOf("") }
+        LaunchedEffect(fullText) {
+            visibleText = ""
+            fullText.forEachIndexed { index, char ->
+                delay(30)
+                visibleText += char
+            }
+        }
+
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
             horizontalArrangement = Arrangement.Start
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Text(text = text, color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.padding(12.dp))
+                Text(
+                    text = visibleText,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier.padding(12.dp)
+                )
             }
         }
     }

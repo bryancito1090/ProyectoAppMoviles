@@ -37,7 +37,7 @@ data class Message(val sender: String, val content: String)
 
 class MainActivity : ComponentActivity() {
 
-    private val apiKey = "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"
+    private val apiKey = ""
     private lateinit var db: AppDatabase
     private val messages = mutableStateListOf<Message>()
 

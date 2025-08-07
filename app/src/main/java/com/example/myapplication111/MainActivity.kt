@@ -59,9 +59,15 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MyApplication111Theme {
-                ChatScreen()
+                var showSplash by remember { mutableStateOf(true) }
+                if (showSplash) {
+                    SplashScreen { showSplash = false }
+                } else {
+                    ChatScreen()
+                }
             }
         }
+
     }
 
     private fun newChat() {
